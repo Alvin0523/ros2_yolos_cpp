@@ -1,23 +1,9 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Geekgineer/YOLOs-CPP/main/data/cover.png" alt="ros2_yolos_cpp" width="100%"/>
-</p>
-
-<h1 align="center">ROS 2 YOLOs-CPP</h1>
-<h3 align="center">High-Performance ROS 2 Wrapper for YOLO Inference</h3>
-
-<p align="center">
-  <em>Production-grade, lifecycle-managed ROS 2 nodes for Object Detection, Segmentation, Pose, OBB, and Classification using <a href="https://github.com/Geekgineer/YOLOs-CPP">YOLOs-CPP</a>.</em>
-</p>
-
-<p align="center">
-  <a href="https://github.com/Geekgineer/ros2_yolos_cpp/actions"><img src="https://img.shields.io/github/actions/workflow/status/Geekgineer/ros2_yolos_cpp/ci.yml?style=flat-square&label=CI" alt="CI"/></a>
-  <a href="https://github.com/Geekgineer/ros2_yolos_cpp/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-ef4444?style=flat-square" alt="License"/></a>
-  <a href="https://index.ros.org/p/ros2_yolos_cpp/"><img src="https://img.shields.io/badge/ros-humble%20|%20jazzy-blue?style=flat-square&logo=ros" alt="ROS 2 Versions"/></a>
-</p>
-
----
-
 ## 🚀 Overview
+
+Implementation of YOLO-CPP by Mecatron.
+
+- **⚡ YOLOs-CPP**: https://github.com/Geekgineer/YOLOs-CPP
+- **⚡ ros2_yolos_cpp**: https://github.com/Geekgineer/ros2_yolos_cpp.git
 
 **ros2_yolos_cpp** brings the blazing speed and unified API of [YOLOs-CPP](https://github.com/Geekgineer/YOLOs-CPP) to the robot operating system. It provides composable, lifecycle-managed nodes for the entire YOLO family (v5, v8, v11, v26, etc.).
 
@@ -33,20 +19,93 @@
 ## 📥 Installation
 
 ### Prerequisites
-- **ROS 2**: Humble or Jazzy
-- **OpenCV**: 4.5+
-- **ONNX Runtime**: 1.16+ (Auto-downloaded during build)
 
-### Build from Source
+| Requirement | Version | Notes |
+|-------------|---------|-------|
+| C++ Compiler | C++17 | GCC 9+, Clang 10+, MSVC 2019+ |
+| CMake | ≥ 3.16 | |
+| OpenCV (CPP) | ≥ 4.5 | Core, ImgProc, HighGUI |
+| ONNX Runtime | ≥ 1.16 | Auto-downloaded by build script |
+
+### Requirement Check
+
+```bash
+# Check GCC version
+g++ --version
+
+# Check cmake
+cmake --version
+
+# OpenCV (CPP)
+pkg-config --modversion opencv4 2>/dev/null || pkg-config --modversion opencv
+```
+### CUDA & cuDNN Requirement for ONNX Runtime
+- CUDA 12.x is the default version for ONNX Runtime GPU packages in PyPI
+- Other versions of CUDA please refer to [ONNX_CUDA](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)
+
+| ONNX Runtime Version | CUDA  | cuDNN |
+|----------------------|-------|-------|
+| 1.20.x               | 12.x  | 9.x   |
+
+#### CUDA 12.4.0 & cuDNN (RECOMMENDED)
+[CUDA 12.4.0](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)
+```bash
+# Clone
+wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
+
+sudo sh cuda_12.4.0_550.54.14_linux.run
+
+# Create symlink (required for most tools to find CUDA)
+sudo ln -s /usr/local/cuda-12.4 /usr/local/cuda
+
+# Add to ~/.bashrc
+echo 'export PATH=/usr/local/cuda/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+source ~/.bashrc
+
+# Check installation
+nvcc --version 
+```
+[cuDNN](https://developer.nvidia.com/cudnn-9-0-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
+
+```bash
+# Install
+wget https://developer.download.nvidia.com/compute/cudnn/9.0.0/local_installers/cudnn-local-repo-ubuntu2204-9.0.0_1.0-1_amd64.deb
+sudo dpkg -i cudnn-local-repo-ubuntu2204-9.0.0_1.0-1_amd64.deb
+sudo cp /var/cudnn-local-repo-ubuntu2204-9.0.0/cudnn-*-keyring.gpg /usr/share/keyrings/
+sudo apt-get update
+sudo apt-get -y install cudnn-cuda-12
+
+# Create symlinks so ONNX Runtime finds cuDNN
+sudo ln -s /usr/include/x86_64-linux-gnu/cudnn_version.h /usr/local/cuda/include/cudnn_version.h
+sudo ln -s /usr/include/x86_64-linux-gnu/cudnn*.h /usr/local/cuda/include/ 2>/dev/null || true
+sudo ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.9 /usr/local/cuda/lib64/libcudnn.so.9
+sudo ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so /usr/local/cuda/lib64/libcudnn.so
+```
+
+
+### Installation of ONNX Runtime
+
+```bash
+# Clone
+git clone https://github.com/Geekgineer/YOLOs-CPP.git
+cd YOLOs-CPP
+
+# Build (auto-downloads ONNX Runtime)
+./build.sh 1.20.1 0   # CPU build 
+./build.sh 1.20.1 1   # GPU build (requires CUDA - pick this)
+```
+
+### Build the ros2_yolos_cpp package
 ```bash
 # Create workspace
-mkdir -p ~/ros2_ws/src && cd ~/ros2_ws/src
+cd ros2_ws/src
 
 # Clone package
 git clone https://github.com/Geekgineer/ros2_yolos_cpp.git
 
 # Install dependencies
-cd ~/ros2_ws
+cd ros2_ws
 rosdep update && rosdep install --from-paths src --ignore-src -y
 
 # Build (Release mode recommended for performance)
@@ -54,22 +113,38 @@ colcon build --packages-select ros2_yolos_cpp --cmake-args -DCMAKE_BUILD_TYPE=Re
 source install/setup.bash
 ```
 
+### YOLO-CPP Package
+‼️The YOLO-CPP package is used to build the onnxruntime, you may remove it when installation of the build is done (temporary)
+
 ---
 
 ## 🛠️ Usage
 
 This package provides a launch file for each task. You **must** provide paths to your ONNX model and (optionally) labels file.
 
+### 0. USB CAM Testing (WSL)
+```bash
+ros2 run usb_cam usb_cam_node_exe --ros-args \
+  -p video_device:=/dev/video0 \
+  -p image_width:=640 \
+  -p image_height:=480 \
+  -p framerate:=30.0 \
+  -p pixel_format:=mjpeg2rgb \
+  -p io_method:=mmap \
+  -r __ns:=/camera
+```
+
 ### 1. Object Detection
 Publishes `vision_msgs/Detection2DArray` with bounding boxes and class IDs.
 
 ```bash
 ros2 launch ros2_yolos_cpp detector.launch.py \
-    model_path:=/path/to/yolo11n.onnx \
-    labels_path:=/path/to/coco.names \
+    model_path:=src/ros2_yolos_cpp/models/yolo11n.onnx \
+    labels_path:=src/ros2_yolos_cpp/models/coco.names \
     use_gpu:=true \
     image_topic:=/camera/image_raw
 ```
+
 
 ### 2. Instance Segmentation
 Publishes `vision_msgs/Detection2DArray` and a synchronized mask image.
@@ -108,6 +183,29 @@ ros2 launch ros2_yolos_cpp classifier.launch.py \
     model_path:=/path/to/yolo11n-cls.onnx \
     labels_path:=/path/to/imagenet.names \
     image_topic:=/camera/image_raw
+```
+### Starting ros2_yolo_cpp
+- ros2_yolos_cpp is manged by life cycle
+- After launching the launch file:
+
+#### To Activate:
+```bash
+# Step 1: Configure (loads model, allocates GPU memory)
+ros2 lifecycle set /yolos_detector configure
+
+# Step 2: Activate (STARTS INFERENCE → publishes detections)
+ros2 lifecycle set /yolos_detector activate
+```
+#### To Deactivate:
+```bash
+# 1. Deactivate → stops inference (active → inactive)
+ros2 lifecycle set /yolos_detector deactivate
+
+# 2. Cleanup → releases GPU/memory (inactive → unconfigured)
+ros2 lifecycle set /yolos_detector cleanup
+
+# 3. Shutdown → fully terminates node (unconfigured → finalized)
+ros2 lifecycle set /yolos_detector shutdown
 ```
 
 ---
@@ -152,13 +250,3 @@ docker run --gpus all -it --rm \
     ros2_yolos_cpp \
     ros2 launch ros2_yolos_cpp detector.launch.py model_path:=/models/yolov8n.onnx
 ```
-
----
-
-## 📄 License
-
-This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See [LICENSE](LICENSE) for details.
-
-<p align="center">
-  Made with ❤️ by the <a href="https://github.com/Geekgineer/YOLOs-CPP">YOLOs-CPP Team</a>
-</p>
