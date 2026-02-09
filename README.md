@@ -47,13 +47,13 @@ pkg-config --modversion opencv4 2>/dev/null || pkg-config --modversion opencv
 |----------------------|-------|-------|
 | 1.20.x               | 12.x  | 9.x   |
 
-#### CUDA 12.4.0 & cuDNN (RECOMMENDED)
-[CUDA 12.4.0](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html)
+#### CUDA 12.8 (WSL) & cuDNN 9.19.0
+[CUDA](https://developer.nvidia.com/cuda-12-8-0-download-archive)
 ```bash
 # Clone
-wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
+wget https://developer.download.nvidia.com/compute/cuda/12.8.0/local_installers/cuda_12.8.0_570.86.10_linux.run
+sudo sh cuda_12.8.0_570.86.10_linux.run
 
-sudo sh cuda_12.4.0_550.54.14_linux.run
 
 # Create symlink (required for most tools to find CUDA)
 sudo ln -s /usr/local/cuda-12.4 /usr/local/cuda
@@ -66,22 +66,15 @@ source ~/.bashrc
 # Check installation
 nvcc --version 
 ```
-[cuDNN](https://developer.nvidia.com/cudnn-9-0-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local)
+[cuDNN](https://developer.nvidia.com/cudnn-downloads)
 
 ```bash
 # Install
-wget https://developer.download.nvidia.com/compute/cudnn/9.0.0/local_installers/cudnn-local-repo-ubuntu2204-9.0.0_1.0-1_amd64.deb
-sudo dpkg -i cudnn-local-repo-ubuntu2204-9.0.0_1.0-1_amd64.deb
-sudo cp /var/cudnn-local-repo-ubuntu2204-9.0.0/cudnn-*-keyring.gpg /usr/share/keyrings/
+wget https://developer.download.nvidia.com/compute/cudnn/9.19.0/local_installers/cudnn-local-repo-ubuntu2204-9.19.0_1.0-1_amd64.deb
+sudo dpkg -i cudnn-local-repo-ubuntu2204-9.19.0_1.0-1_amd64.deb
+sudo cp /var/cudnn-local-repo-ubuntu2204-9.19.0/cudnn-*-keyring.gpg /usr/share/keyrings/
 sudo apt-get update
-sudo apt-get -y install cudnn-cuda-12
-
-# Create symlinks so ONNX Runtime finds cuDNN
-sudo ln -s /usr/include/x86_64-linux-gnu/cudnn_version.h /usr/local/cuda/include/cudnn_version.h
-sudo ln -s /usr/include/x86_64-linux-gnu/cudnn*.h /usr/local/cuda/include/ 2>/dev/null || true
-sudo ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.9 /usr/local/cuda/lib64/libcudnn.so.9
-sudo ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so /usr/local/cuda/lib64/libcudnn.so
-```
+sudo apt-get -y install cudnn9-cuda-12
 
 
 ### Installation of ONNX Runtime
