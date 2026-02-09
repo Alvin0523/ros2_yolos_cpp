@@ -117,6 +117,9 @@ This package provides a launch file for each task. You **must** provide paths to
 
 ### 0. USB CAM Testing (WSL)
 ```bash
+sudo apt install ros-humble-usb-cam
+```
+```bash
 ros2 run usb_cam usb_cam_node_exe --ros-args \
   -p video_device:=/dev/video0 \
   -p image_width:=640 \
